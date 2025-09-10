@@ -179,7 +179,7 @@ namespace Replication
             }
         }
 
-        private void DoReplicate(string source, string destination)
+        public static void DoReplicate(string source, string destination)
         {
             try
             {
