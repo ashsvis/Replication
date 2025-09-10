@@ -75,6 +75,7 @@
             // 
             // tvSource
             // 
+            tvSource.BorderStyle = BorderStyle.None;
             tvSource.Dock = DockStyle.Fill;
             tvSource.ImageIndex = 0;
             tvSource.ImageList = imageList1;
@@ -119,6 +120,7 @@
             // 
             // tsbDefineRootSourcePath
             // 
+            tsbDefineRootSourcePath.Alignment = ToolStripItemAlignment.Right;
             tsbDefineRootSourcePath.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbDefineRootSourcePath.Image = (Image)resources.GetObject("tsbDefineRootSourcePath.Image");
             tsbDefineRootSourcePath.ImageTransparentColor = Color.Magenta;
@@ -135,6 +137,7 @@
             // 
             // tvDestination
             // 
+            tvDestination.BorderStyle = BorderStyle.None;
             tvDestination.Dock = DockStyle.Fill;
             tvDestination.ImageIndex = 0;
             tvDestination.ImageList = imageList1;
@@ -170,6 +173,7 @@
             // 
             // tsbDefineRootDestinationPath
             // 
+            tsbDefineRootDestinationPath.Alignment = ToolStripItemAlignment.Right;
             tsbDefineRootDestinationPath.DisplayStyle = ToolStripItemDisplayStyle.Image;
             tsbDefineRootDestinationPath.Image = (Image)resources.GetObject("tsbDefineRootDestinationPath.Image");
             tsbDefineRootDestinationPath.ImageTransparentColor = Color.Magenta;
