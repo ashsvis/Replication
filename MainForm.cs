@@ -34,21 +34,29 @@ namespace Replication
             LoadTree(tvDestination, rootDestinationPath);
         }
 
-        private static void LoadTree(TreeView tv, string rootPath)
+        private void LoadTree(TreeView tv, string rootPath)
         {
             tv.Nodes.Clear();
             if (string.IsNullOrEmpty(rootPath)) return;
+            Cursor = Cursors.WaitCursor;
             try
             {
-                var folders = Directory.GetDirectories(rootPath);
-                var nRoot = new TreeNode(rootPath) { Tag = rootPath };
-                tv.Nodes.Add(nRoot);
-                FillNodes(nRoot, rootPath);
-                nRoot.Expand();
+                try
+                {
+                    var folders = Directory.GetDirectories(rootPath);
+                    var nRoot = new TreeNode(rootPath) { Tag = rootPath };
+                    tv.Nodes.Add(nRoot);
+                    FillNodes(nRoot, rootPath);
+                    nRoot.Expand();
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
-            catch (Exception ex)
+            finally
             {
-                MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                Cursor = Cursors.Default;
             }
         }
 
@@ -101,13 +109,21 @@ namespace Replication
             e.Node.Nodes.Clear();
             if (e.Node.Tag is string path)
             {
+                Cursor = Cursors.WaitCursor;
                 try
                 {
-                    FillNodes(e.Node, path);
-                }
-                catch (Exception ex)
-                {
-                    MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    try
+                    {
+                        FillNodes(e.Node, path);
+                    }
+                    catch (Exception ex)
+                    {
+                        MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                } 
+                finally
+                { 
+                    Cursor = Cursors.Default; 
                 }
             }
         }

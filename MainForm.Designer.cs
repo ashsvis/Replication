@@ -198,6 +198,7 @@
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(994, 547);
             Controls.Add(splitContainer1);
+            DoubleBuffered = true;
             Name = "MainForm";
             StartPosition = FormStartPosition.CenterScreen;
             Text = "Репликация файлов и папок";
