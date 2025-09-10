@@ -1,3 +1,5 @@
+using System.IO;
+
 namespace Replication
 {
     public partial class MainForm : Form
@@ -32,7 +34,7 @@ namespace Replication
             LoadTree(tvDestination, rootDestinationPath);
         }
 
-        private void LoadTree(TreeView tv, string rootPath)
+        private static void LoadTree(TreeView tv, string rootPath)
         {
             tv.Nodes.Clear();
             if (string.IsNullOrEmpty(rootPath)) return;
@@ -41,32 +43,11 @@ namespace Replication
                 var folders = Directory.GetDirectories(rootPath);
                 var nRoot = new TreeNode(rootPath) { Tag = rootPath };
                 tv.Nodes.Add(nRoot);
-                foreach (var folder in folders)
-                {
-                    var nfolder = new TreeNode(Path.GetRelativePath(rootPath, folder))
-                    {
-                        Tag = folder,
-                        ImageIndex = 0,
-                        SelectedImageIndex = 0
-                    };
-                    nfolder.Nodes.Add("stub");
-                    nRoot.Nodes.Add(nfolder);
-                }
-                var files = Directory.GetFiles(rootPath);
-                foreach (var file in files)
-                {
-                    var nfile = new TreeNode(Path.GetRelativePath(rootPath, file))
-                    {
-                        Tag = file,
-                        ImageIndex = 1,
-                        SelectedImageIndex = 1
-                    };
-                    nRoot.Nodes.Add(nfile);
-                }
+                FillNodes(nRoot, rootPath);
                 nRoot.Expand();
             }
             catch (Exception ex)
-            { 
+            {
                 MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
@@ -100,14 +81,7 @@ namespace Replication
 
         private void tsbDefineRootDestinationPath_Click(object sender, EventArgs e)
         {
-            //var dlg = new FolderBrowserDialog
-            //{
-            //    RootFolder = Environment.SpecialFolder.MyDocuments,
-            //    SelectedPath = rootDestinationPath
-            //};
-            var dlg = new RootFolderSelectDialog(rootDestinationPath)
-            { 
-            };
+            var dlg = new RootFolderSelectDialog(rootDestinationPath);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 if (rootDestinationPath != dlg.SelectedPath)
@@ -119,6 +93,57 @@ namespace Replication
                     Properties.Settings.Default.Save();
                 }
             }
+        }
+
+        private void tvTree_BeforeExpand(object sender, TreeViewCancelEventArgs e)
+        {
+            if (e.Node == null) return;
+            e.Node.Nodes.Clear();
+            if (e.Node.Tag is string path)
+            {
+                try
+                {
+                    FillNodes(e.Node, path);
+                }
+                catch (Exception ex)
+                {
+                    MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+            }
+        }
+
+        private static void FillNodes(TreeNode node, string path)
+        {
+            var folders = Directory.GetDirectories(path);
+            foreach (var folder in folders)
+            {
+                var nfolder = new TreeNode(Path.GetRelativePath(path, folder))
+                {
+                    Tag = folder,
+                    ImageIndex = 0,
+                    SelectedImageIndex = 0
+                };
+                nfolder.Nodes.Add("stub");
+                node.Nodes.Add(nfolder);
+            }
+            var files = Directory.GetFiles(path);
+            foreach (var file in files)
+            {
+                var nfile = new TreeNode(Path.GetRelativePath(path, file))
+                {
+                    Tag = file,
+                    ImageIndex = 1,
+                    SelectedImageIndex = 1
+                };
+                node.Nodes.Add(nfile);
+            }
+        }
+
+        private void tvTree_AfterCollapse(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node == null) return;
+            e.Node.Nodes.Clear();
+            e.Node.Nodes.Add("stub");
         }
     }
 }

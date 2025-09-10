@@ -84,6 +84,8 @@
             tvSource.SelectedImageIndex = 0;
             tvSource.Size = new Size(497, 500);
             tvSource.TabIndex = 2;
+            tvSource.AfterCollapse += tvTree_AfterCollapse;
+            tvSource.BeforeExpand += tvTree_BeforeExpand;
             // 
             // imageList1
             // 
@@ -146,6 +148,8 @@
             tvDestination.SelectedImageIndex = 0;
             tvDestination.Size = new Size(493, 500);
             tvDestination.TabIndex = 2;
+            tvDestination.AfterCollapse += tvTree_AfterCollapse;
+            tvDestination.BeforeExpand += tvTree_BeforeExpand;
             // 
             // statusStrip2
             // 
