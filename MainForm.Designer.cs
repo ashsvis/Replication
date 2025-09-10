@@ -44,6 +44,7 @@
             toolStripLabel2 = new ToolStripLabel();
             tsbDefineRootDestinationPath = new ToolStripButton();
             tslRootDestinationPath = new ToolStripLabel();
+            tsbDoReplicate = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -106,7 +107,7 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, tsbDefineRootSourcePath, tslRootSourcePath });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, tsbDoReplicate, tsbDefineRootSourcePath, tslRootSourcePath });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(497, 25);
@@ -192,6 +193,17 @@
             tslRootDestinationPath.Size = new Size(17, 22);
             tslRootDestinationPath.Text = "\\\\";
             // 
+            // tsbDoReplicate
+            // 
+            tsbDoReplicate.Alignment = ToolStripItemAlignment.Right;
+            tsbDoReplicate.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbDoReplicate.Image = Properties.Resources.right;
+            tsbDoReplicate.ImageTransparentColor = Color.Magenta;
+            tsbDoReplicate.Name = "tsbDoReplicate";
+            tsbDoReplicate.Size = new Size(23, 22);
+            tsbDoReplicate.Text = "Запуск репликации";
+            tsbDoReplicate.Click += tsbDoReplicate_Click;
+            // 
             // MainForm
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -233,5 +245,6 @@
         private ImageList imageList1;
         private ToolStripLabel toolStripLabel1;
         private ToolStripLabel toolStripLabel2;
+        private ToolStripButton tsbDoReplicate;
     }
 }

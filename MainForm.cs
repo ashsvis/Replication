@@ -120,10 +120,10 @@ namespace Replication
                     {
                         MessageBox.Show(ex.Message, "Ошибка загрузки файлового пути", MessageBoxButtons.OK, MessageBoxIcon.Error);
                     }
-                } 
+                }
                 finally
-                { 
-                    Cursor = Cursors.Default; 
+                {
+                    Cursor = Cursors.Default;
                 }
             }
         }
@@ -160,6 +160,78 @@ namespace Replication
             if (e.Node == null) return;
             e.Node.Nodes.Clear();
             e.Node.Nodes.Add("stub");
+        }
+
+        private void tsbDoReplicate_Click(object sender, EventArgs e)
+        {
+            tsbDoReplicate.Enabled = false;
+            Cursor = Cursors.WaitCursor;
+            try
+            {
+                DoReplicate(rootSourcePath, rootDestinationPath);
+                LoadTree(tvSource, rootSourcePath);
+                LoadTree(tvDestination, rootDestinationPath);
+            }
+            finally
+            {
+                tsbDoReplicate.Enabled = true;
+                Cursor = Cursors.Default;
+            }
+        }
+
+        private void DoReplicate(string source, string destination)
+        {
+            try
+            {
+                var sourceFolders = Directory.GetDirectories(source);
+                foreach (var folder in sourceFolders.Select(x => new DirectoryInfo(x)))
+                {
+                    var dirpath = Path.Combine(destination, Path.GetRelativePath(source, folder.FullName));
+                    if (!Directory.Exists(dirpath))
+                    {
+                        // создание папки, которой не было в назначении
+                        Directory.CreateDirectory(dirpath);
+                    }
+                    var files = Directory.GetFiles(source);
+                    foreach (var sourcefile in files.Select(x => new FileInfo(x))) 
+                    {
+                        var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
+                        if (!destfile.Exists)
+                        {
+                            // копирование файла, которого не было в назначении
+                            sourcefile.CopyTo(destfile.FullName);
+                        }
+                        else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
+                        {
+                            // перезапись файла, который устарел в назначении
+                            sourcefile.CopyTo(destfile.FullName, true);
+                        }
+                    }
+                }
+                /*
+                var dectinationFolders = Directory.GetDirectories(destination);
+                foreach (var folder in dectinationFolders.Select(x => new DirectoryInfo(x)))
+                {
+                    var dirpath = Path.Combine(source, Path.GetRelativePath(destination, folder.FullName));
+                    if (!Directory.Exists(dirpath))
+                    {
+                        // удаление папки, которой не было в источнике
+                        folder.Delete();
+                    }
+                    var files = Directory.GetFiles(destination);
+                    foreach (var file in files.Select(x => new FileInfo(x))) 
+                    {
+                        var filepath = Path.Combine(source, Path.GetRelativePath(destination, file.FullName));
+                        if (!File.Exists(filepath))
+                        {
+                            // удаление файла, которого не было в источнике
+                            file.Delete();
+                        }
+                    }
+                }
+                */
+            }
+            catch { }
         }
     }
 }
