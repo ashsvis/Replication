@@ -34,22 +34,27 @@
             tvSource = new TreeView();
             imageList1 = new ImageList(components);
             statusStrip1 = new StatusStrip();
+            toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStrip1 = new ToolStrip();
             toolStripLabel1 = new ToolStripLabel();
+            tsbDoReplicate = new ToolStripButton();
             tsbDefineRootSourcePath = new ToolStripButton();
             tslRootSourcePath = new ToolStripLabel();
             tvDestination = new TreeView();
             statusStrip2 = new StatusStrip();
+            toolStripStatusLabel2 = new ToolStripStatusLabel();
             toolStrip2 = new ToolStrip();
             toolStripLabel2 = new ToolStripLabel();
             tsbDefineRootDestinationPath = new ToolStripButton();
             tslRootDestinationPath = new ToolStripLabel();
-            tsbDoReplicate = new ToolStripButton();
+            tsbBreak = new ToolStripButton();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
             splitContainer1.SuspendLayout();
+            statusStrip1.SuspendLayout();
             toolStrip1.SuspendLayout();
+            statusStrip2.SuspendLayout();
             toolStrip2.SuspendLayout();
             SuspendLayout();
             // 
@@ -98,6 +103,7 @@
             // 
             // statusStrip1
             // 
+            statusStrip1.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel1 });
             statusStrip1.Location = new Point(0, 525);
             statusStrip1.Name = "statusStrip1";
             statusStrip1.Size = new Size(497, 22);
@@ -105,9 +111,14 @@
             statusStrip1.TabIndex = 1;
             statusStrip1.Text = "statusStrip1";
             // 
+            // toolStripStatusLabel1
+            // 
+            toolStripStatusLabel1.Name = "toolStripStatusLabel1";
+            toolStripStatusLabel1.Size = new Size(0, 17);
+            // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, tsbDoReplicate, tsbDefineRootSourcePath, tslRootSourcePath });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, tsbBreak, tsbDoReplicate, tsbDefineRootSourcePath, tslRootSourcePath });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(497, 25);
@@ -120,6 +131,17 @@
             toolStripLabel1.Name = "toolStripLabel1";
             toolStripLabel1.Size = new Size(66, 22);
             toolStripLabel1.Text = "Источник:";
+            // 
+            // tsbDoReplicate
+            // 
+            tsbDoReplicate.Alignment = ToolStripItemAlignment.Right;
+            tsbDoReplicate.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbDoReplicate.Image = Properties.Resources.right;
+            tsbDoReplicate.ImageTransparentColor = Color.Magenta;
+            tsbDoReplicate.Name = "tsbDoReplicate";
+            tsbDoReplicate.Size = new Size(23, 22);
+            tsbDoReplicate.Text = "Запуск репликации";
+            tsbDoReplicate.Click += tsbDoReplicate_Click;
             // 
             // tsbDefineRootSourcePath
             // 
@@ -154,11 +176,17 @@
             // 
             // statusStrip2
             // 
+            statusStrip2.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2 });
             statusStrip2.Location = new Point(0, 525);
             statusStrip2.Name = "statusStrip2";
             statusStrip2.Size = new Size(493, 22);
             statusStrip2.TabIndex = 1;
             statusStrip2.Text = "statusStrip2";
+            // 
+            // toolStripStatusLabel2
+            // 
+            toolStripStatusLabel2.Name = "toolStripStatusLabel2";
+            toolStripStatusLabel2.Size = new Size(0, 17);
             // 
             // toolStrip2
             // 
@@ -193,16 +221,17 @@
             tslRootDestinationPath.Size = new Size(17, 22);
             tslRootDestinationPath.Text = "\\\\";
             // 
-            // tsbDoReplicate
+            // tsbBreak
             // 
-            tsbDoReplicate.Alignment = ToolStripItemAlignment.Right;
-            tsbDoReplicate.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            tsbDoReplicate.Image = Properties.Resources.right;
-            tsbDoReplicate.ImageTransparentColor = Color.Magenta;
-            tsbDoReplicate.Name = "tsbDoReplicate";
-            tsbDoReplicate.Size = new Size(23, 22);
-            tsbDoReplicate.Text = "Запуск репликации";
-            tsbDoReplicate.Click += tsbDoReplicate_Click;
+            tsbBreak.Alignment = ToolStripItemAlignment.Right;
+            tsbBreak.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbBreak.Image = Properties.Resources.close;
+            tsbBreak.ImageTransparentColor = Color.Magenta;
+            tsbBreak.Name = "tsbBreak";
+            tsbBreak.Size = new Size(23, 22);
+            tsbBreak.Text = "Прервать";
+            tsbBreak.Visible = false;
+            tsbBreak.Click += tsbBreak_Click;
             // 
             // MainForm
             // 
@@ -222,8 +251,12 @@
             splitContainer1.Panel2.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).EndInit();
             splitContainer1.ResumeLayout(false);
+            statusStrip1.ResumeLayout(false);
+            statusStrip1.PerformLayout();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
+            statusStrip2.ResumeLayout(false);
+            statusStrip2.PerformLayout();
             toolStrip2.ResumeLayout(false);
             toolStrip2.PerformLayout();
             ResumeLayout(false);
@@ -246,5 +279,8 @@
         private ToolStripLabel toolStripLabel1;
         private ToolStripLabel toolStripLabel2;
         private ToolStripButton tsbDoReplicate;
+        private ToolStripStatusLabel toolStripStatusLabel1;
+        private ToolStripStatusLabel toolStripStatusLabel2;
+        private ToolStripButton tsbBreak;
     }
 }

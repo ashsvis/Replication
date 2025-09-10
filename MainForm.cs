@@ -1,4 +1,8 @@
+using System.ComponentModel;
+using System.Data;
+using System.Diagnostics;
 using System.IO;
+using System.Windows.Forms;
 
 namespace Replication
 {
@@ -62,6 +66,7 @@ namespace Replication
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
+            @break = true;
             Properties.Settings.Default.MainFormLocation = Location;
             Properties.Settings.Default.MainFormSize = Size;
             Properties.Settings.Default.Save();
@@ -164,51 +169,82 @@ namespace Replication
 
         private void tsbDoReplicate_Click(object sender, EventArgs e)
         {
-            tsbDoReplicate.Enabled = false;
-            Cursor = Cursors.WaitCursor;
             try
             {
-                DoReplicate(rootSourcePath, rootDestinationPath);
+                @break = false;
+                tsbBreak.Visible = true;
+                tsbDoReplicate.Enabled = false;
+                tsbDefineRootSourcePath.Enabled = false;
+                tsbDefineRootDestinationPath.Enabled = false;
+                toolStrip1.Refresh();
+                DoReplicate(rootSourcePath, rootDestinationPath, UpdateStatus);
                 LoadTree(tvSource, rootSourcePath);
                 LoadTree(tvDestination, rootDestinationPath);
             }
             finally
             {
+                tsbBreak.Visible = false;
                 tsbDoReplicate.Enabled = true;
-                Cursor = Cursors.Default;
+                tsbDefineRootSourcePath.Enabled = true;
+                tsbDefineRootDestinationPath.Enabled = true;
             }
         }
 
-        public static void DoReplicate(string source, string destination)
+        private void UpdateStatus(string action, string source, string destination)
+        {
+            toolStripStatusLabel1.Text = action + source;
+            statusStrip1.Refresh();
+            toolStripStatusLabel2.Text = destination;
+            statusStrip2.Refresh();
+        }
+
+        private static bool @break = false;
+
+        public static void DoReplicate(string source, string destination, UpdateStatus? method = null)
         {
             try
             {
                 var sourceFolders = Directory.GetDirectories(source);
                 var files = Directory.GetFiles(source);
-                foreach (var sourcefile in files.Select(x => new FileInfo(x))) 
+                foreach (var sourcefile in files.Select(x => new FileInfo(x)))
                 {
+                    if (@break) break;
                     var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
                     if (!destfile.Exists)
                     {
                         // копирование файла, которого не было в назначении
+                        method?.Invoke("Копирую новый: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", sourcefile.FullName),
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName));
+                        if (method != null) Application.DoEvents();
                         sourcefile.CopyTo(destfile.FullName);
                     }
                     else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
                     {
                         // перезапись файла, который устарел в назначении
+                        method?.Invoke("Обновляю: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", sourcefile.FullName),
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName));
+                        if (method != null) Application.DoEvents();
                         sourcefile.CopyTo(destfile.FullName, true);
                     }
                 }
                 foreach (var folder in sourceFolders.Select(x => new DirectoryInfo(x)))
                 {
+                    if (@break) break;
                     var dirpath = Path.Combine(destination, Path.GetRelativePath(source, folder.FullName));
                     if (!Directory.Exists(dirpath))
                     {
                         // создание папки, которой не было в назначении
+                        method?.Invoke("Создаю папку: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", folder.FullName),
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", dirpath));
+                        if (method != null) Application.DoEvents();
                         Directory.CreateDirectory(dirpath);
                     }
-                    DoReplicate(folder.FullName, dirpath);
+                    DoReplicate(folder.FullName, dirpath, method);
                 }
+                method?.Invoke("Готово.", "", "");
                 /*
                 var dectinationFolders = Directory.GetDirectories(destination);
                 foreach (var folder in dectinationFolders.Select(x => new DirectoryInfo(x)))
@@ -234,5 +270,13 @@ namespace Replication
             }
             catch { }
         }
+
+        private void tsbBreak_Click(object sender, EventArgs e)
+        {
+            @break = true;
+            tsbBreak.Visible = false;
+        }
     }
+
+    public delegate void UpdateStatus(string action, string source, string destination);
 }
