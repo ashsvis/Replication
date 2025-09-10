@@ -32,16 +32,18 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             splitContainer1 = new SplitContainer();
             tvSource = new TreeView();
+            imageList1 = new ImageList(components);
             statusStrip1 = new StatusStrip();
             toolStrip1 = new ToolStrip();
+            toolStripLabel1 = new ToolStripLabel();
             tsbDefineRootSourcePath = new ToolStripButton();
             tslRootSourcePath = new ToolStripLabel();
             tvDestination = new TreeView();
             statusStrip2 = new StatusStrip();
             toolStrip2 = new ToolStrip();
+            toolStripLabel2 = new ToolStripLabel();
             tsbDefineRootDestinationPath = new ToolStripButton();
             tslRootDestinationPath = new ToolStripLabel();
-            imageList1 = new ImageList(components);
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -82,6 +84,14 @@
             tvSource.Size = new Size(497, 500);
             tvSource.TabIndex = 2;
             // 
+            // imageList1
+            // 
+            imageList1.ColorDepth = ColorDepth.Depth32Bit;
+            imageList1.ImageStream = (ImageListStreamer)resources.GetObject("imageList1.ImageStream");
+            imageList1.TransparentColor = Color.Transparent;
+            imageList1.Images.SetKeyName(0, "open.png");
+            imageList1.Images.SetKeyName(1, "newpage.png");
+            // 
             // statusStrip1
             // 
             statusStrip1.Location = new Point(0, 525);
@@ -93,12 +103,19 @@
             // 
             // toolStrip1
             // 
-            toolStrip1.Items.AddRange(new ToolStripItem[] { tsbDefineRootSourcePath, tslRootSourcePath });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripLabel1, tsbDefineRootSourcePath, tslRootSourcePath });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Size = new Size(497, 25);
             toolStrip1.TabIndex = 0;
             toolStrip1.Text = "toolStrip1";
+            // 
+            // toolStripLabel1
+            // 
+            toolStripLabel1.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            toolStripLabel1.Name = "toolStripLabel1";
+            toolStripLabel1.Size = new Size(66, 22);
+            toolStripLabel1.Text = "Источник:";
             // 
             // tsbDefineRootSourcePath
             // 
@@ -108,6 +125,7 @@
             tsbDefineRootSourcePath.Name = "tsbDefineRootSourcePath";
             tsbDefineRootSourcePath.Size = new Size(23, 22);
             tsbDefineRootSourcePath.Text = "Определить корневую папку источника";
+            tsbDefineRootSourcePath.Click += tsbDefineRootSourcePath_Click;
             // 
             // tslRootSourcePath
             // 
@@ -136,12 +154,19 @@
             // 
             // toolStrip2
             // 
-            toolStrip2.Items.AddRange(new ToolStripItem[] { tsbDefineRootDestinationPath, tslRootDestinationPath });
+            toolStrip2.Items.AddRange(new ToolStripItem[] { toolStripLabel2, tsbDefineRootDestinationPath, tslRootDestinationPath });
             toolStrip2.Location = new Point(0, 0);
             toolStrip2.Name = "toolStrip2";
             toolStrip2.Size = new Size(493, 25);
             toolStrip2.TabIndex = 0;
             toolStrip2.Text = "toolStrip2";
+            // 
+            // toolStripLabel2
+            // 
+            toolStripLabel2.Font = new Font("Segoe UI", 9F, FontStyle.Bold);
+            toolStripLabel2.Name = "toolStripLabel2";
+            toolStripLabel2.Size = new Size(80, 22);
+            toolStripLabel2.Text = "Назначение:";
             // 
             // tsbDefineRootDestinationPath
             // 
@@ -151,20 +176,13 @@
             tsbDefineRootDestinationPath.Name = "tsbDefineRootDestinationPath";
             tsbDefineRootDestinationPath.Size = new Size(23, 22);
             tsbDefineRootDestinationPath.Text = "Определить корневую папку назначения";
+            tsbDefineRootDestinationPath.Click += tsbDefineRootDestinationPath_Click;
             // 
             // tslRootDestinationPath
             // 
             tslRootDestinationPath.Name = "tslRootDestinationPath";
             tslRootDestinationPath.Size = new Size(17, 22);
             tslRootDestinationPath.Text = "\\\\";
-            // 
-            // imageList1
-            // 
-            imageList1.ColorDepth = ColorDepth.Depth32Bit;
-            imageList1.ImageStream = (ImageListStreamer)resources.GetObject("imageList1.ImageStream");
-            imageList1.TransparentColor = Color.Transparent;
-            imageList1.Images.SetKeyName(0, "open.png");
-            imageList1.Images.SetKeyName(1, "newpage.png");
             // 
             // MainForm
             // 
@@ -204,5 +222,7 @@
         private ToolStripLabel tslRootSourcePath;
         private ToolStripLabel tslRootDestinationPath;
         private ImageList imageList1;
+        private ToolStripLabel toolStripLabel1;
+        private ToolStripLabel toolStripLabel2;
     }
 }
