@@ -184,6 +184,21 @@ namespace Replication
             try
             {
                 var sourceFolders = Directory.GetDirectories(source);
+                var files = Directory.GetFiles(source);
+                foreach (var sourcefile in files.Select(x => new FileInfo(x))) 
+                {
+                    var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
+                    if (!destfile.Exists)
+                    {
+                        // копирование файла, которого не было в назначении
+                        sourcefile.CopyTo(destfile.FullName);
+                    }
+                    else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
+                    {
+                        // перезапись файла, который устарел в назначении
+                        sourcefile.CopyTo(destfile.FullName, true);
+                    }
+                }
                 foreach (var folder in sourceFolders.Select(x => new DirectoryInfo(x)))
                 {
                     var dirpath = Path.Combine(destination, Path.GetRelativePath(source, folder.FullName));
@@ -192,21 +207,7 @@ namespace Replication
                         // создание папки, которой не было в назначении
                         Directory.CreateDirectory(dirpath);
                     }
-                    var files = Directory.GetFiles(source);
-                    foreach (var sourcefile in files.Select(x => new FileInfo(x))) 
-                    {
-                        var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
-                        if (!destfile.Exists)
-                        {
-                            // копирование файла, которого не было в назначении
-                            sourcefile.CopyTo(destfile.FullName);
-                        }
-                        else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
-                        {
-                            // перезапись файла, который устарел в назначении
-                            sourcefile.CopyTo(destfile.FullName, true);
-                        }
-                    }
+                    DoReplicate(folder.FullName, dirpath);
                 }
                 /*
                 var dectinationFolders = Directory.GetDirectories(destination);
