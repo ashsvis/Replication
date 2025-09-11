@@ -66,7 +66,7 @@ namespace Replication
 
         private void MainForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            @break = true;
+            backgroundWorker1.CancelAsync();
             Properties.Settings.Default.MainFormLocation = Location;
             Properties.Settings.Default.MainFormSize = Size;
             Properties.Settings.Default.Save();
@@ -167,40 +167,77 @@ namespace Replication
             e.Node.Nodes.Add("stub");
         }
 
+        private static long countTotal = 0;
+        private static long foldersTotal = 0;
+        private static long filesTotal = 0;
+        private static long countToCopy = 0;
+        private static long countProgress = 0;
+        private static long foldersToCopy = 0;
+        private static long filesToCopy = 0;
+
         private void tsbDoReplicate_Click(object sender, EventArgs e)
         {
-            try
+            tsbBreak.Enabled = true;
+            tsbDoReplicate.Enabled = false;
+            tsbDefineRootSourcePath.Enabled = false;
+            tsbDefineRootDestinationPath.Enabled = false;
+            toolStripProgressBar2.Value = 0;
+            toolStripProgressBar2.Visible = true;
+            toolStrip1.Refresh();
+            backgroundWorker1.RunWorkerAsync();
+        }
+
+        private void backgroundWorker1_DoWork(object sender, DoWorkEventArgs e)
+        {
+            countTotal = 0;
+            foldersTotal = 0;
+            filesTotal = 0;
+            countToCopy = 0;
+            countProgress = 0;
+            foldersToCopy = 0;
+            filesToCopy = 0;
+            DoCalculate(rootSourcePath, rootDestinationPath, (BackgroundWorker)sender);
+            var worker = (BackgroundWorker)sender;
+            worker?.ReportProgress(0, ("Готово. ", 
+                $"Всего {countTotal / 1000000} МБайт (папок: {foldersTotal}, файлов: {filesTotal}) в источнике", 
+                $"Будет добавлено (обновлено) {countToCopy / 1000000} МБайт (папок: {foldersToCopy}, файлов: {filesToCopy}) в назначении"));
+            DoReplicate(rootSourcePath, rootDestinationPath, (BackgroundWorker)sender);
+            worker?.ReportProgress((int)(countProgress * 100.0 / countToCopy), ("Готово. ",
+                $"Всего {countTotal / 1000000} МБайт (папок: {foldersTotal}, файлов: {filesTotal}) в источнике",
+                $"Добавлено (обновлено) {countToCopy / 1000000} МБайт (папок: {foldersToCopy}, файлов: {filesToCopy}) в назначении"));
+        }
+
+        private void backgroundWorker1_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        {
+            if (e.UserState != null)
             {
-                @break = false;
-                tsbBreak.Visible = true;
-                tsbDoReplicate.Enabled = false;
-                tsbDefineRootSourcePath.Enabled = false;
-                tsbDefineRootDestinationPath.Enabled = false;
-                toolStrip1.Refresh();
-                DoReplicate(rootSourcePath, rootDestinationPath, UpdateStatus);
-                LoadTree(tvSource, rootSourcePath);
-                LoadTree(tvDestination, rootDestinationPath);
-            }
-            finally
-            {
-                tsbBreak.Visible = false;
-                tsbDoReplicate.Enabled = true;
-                tsbDefineRootSourcePath.Enabled = true;
-                tsbDefineRootDestinationPath.Enabled = true;
+                (string action, string source, string destination) = ((string, string, string))e.UserState;
+                UpdateStatus(e.ProgressPercentage, action, source, destination);
             }
         }
 
-        private void UpdateStatus(string action, string source, string destination)
+        private void backgroundWorker1_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        {
+            LoadTree(tvSource, rootSourcePath);
+            LoadTree(tvDestination, rootDestinationPath);
+            toolStripProgressBar2.Visible = false;
+            tsbBreak.Enabled = false;
+            tsbDoReplicate.Enabled = true;
+            tsbDefineRootSourcePath.Enabled = true;
+            tsbDefineRootDestinationPath.Enabled = true;
+        }
+
+        private void UpdateStatus(int progressPercentage, string action, string source, string destination)
         {
             toolStripStatusLabel1.Text = action + source;
             statusStrip1.Refresh();
             toolStripStatusLabel2.Text = destination;
+            if (progressPercentage >= 0)
+                toolStripProgressBar2.Value = progressPercentage;
             statusStrip2.Refresh();
         }
 
-        private static bool @break = false;
-
-        public static void DoReplicate(string source, string destination, UpdateStatus? method = null)
+        public static void DoCalculate(string source, string destination, BackgroundWorker? worker = null)
         {
             try
             {
@@ -208,43 +245,111 @@ namespace Replication
                 var files = Directory.GetFiles(source);
                 foreach (var sourcefile in files.Select(x => new FileInfo(x)))
                 {
-                    if (@break) break;
+                    if (worker != null && worker.CancellationPending) break;
+                    filesTotal++;
+                    countTotal += sourcefile.Length;
                     var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
                     if (!destfile.Exists)
                     {
                         // копирование файла, которого не было в назначении
-                        method?.Invoke("Копирую новый: ",
-                            Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", sourcefile.FullName),
-                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName));
-                        if (method != null) Application.DoEvents();
-                        sourcefile.CopyTo(destfile.FullName);
+                        filesToCopy++;
+                        countToCopy += sourcefile.Length;
+                        worker?.ReportProgress(0, ("Будет добавлен: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName), ""));
                     }
                     else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
                     {
                         // перезапись файла, который устарел в назначении
-                        method?.Invoke("Обновляю: ",
+                        filesToCopy++;
+                        countToCopy += sourcefile.Length;
+                        worker?.ReportProgress(0, ("Будет обновлён: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName), ""));
+                    }
+                }
+                foreach (var folder in sourceFolders.Select(x => new DirectoryInfo(x)))
+                {
+                    if (worker != null && worker.CancellationPending) break;
+                    foldersTotal++;
+                    var dirpath = Path.Combine(destination, Path.GetRelativePath(source, folder.FullName));
+                    if (!Directory.Exists(dirpath))
+                    {
+                        foldersToCopy++;
+                        // создание папки, которой не было в назначении
+                        worker?.ReportProgress(0, ("Будет создана папка: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", dirpath), ""));
+                    }
+                    DoCalculate(folder.FullName, dirpath, worker);
+                }
+                /*
+                var dectinationFolders = Directory.GetDirectories(destination);
+                foreach (var folder in dectinationFolders.Select(x => new DirectoryInfo(x)))
+                {
+                    var dirpath = Path.Combine(source, Path.GetRelativePath(destination, folder.FullName));
+                    if (!Directory.Exists(dirpath))
+                    {
+                        // удаление папки, которой не было в источнике
+                        folder.Delete();
+                    }
+                    var files = Directory.GetFiles(destination);
+                    foreach (var file in files.Select(x => new FileInfo(x))) 
+                    {
+                        var filepath = Path.Combine(source, Path.GetRelativePath(destination, file.FullName));
+                        if (!File.Exists(filepath))
+                        {
+                            // удаление файла, которого не было в источнике
+                            file.Delete();
+                        }
+                    }
+                }
+                */
+            }
+            catch { }
+        }
+
+        public static void DoReplicate(string source, string destination, BackgroundWorker? worker = null)
+        {
+            try
+            {
+                var sourceFolders = Directory.GetDirectories(source);
+                var files = Directory.GetFiles(source);
+                foreach (var sourcefile in files.Select(x => new FileInfo(x)))
+                {
+                    if (worker != null && worker.CancellationPending) break;
+                    var destfile = new FileInfo(Path.Combine(destination, Path.GetRelativePath(source, sourcefile.FullName)));
+                    if (!destfile.Exists)
+                    {
+                        countProgress += sourcefile.Length;
+                        // копирование файла, которого не было в назначении
+                        worker?.ReportProgress((int)(countProgress * 100.0 / countToCopy), ("Копирую новый: ",
                             Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", sourcefile.FullName),
-                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName));
-                        if (method != null) Application.DoEvents();
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName)));
+                        sourcefile.CopyTo(destfile.FullName);
+                    }
+                    else if (sourcefile.LastWriteTime > destfile.LastWriteTime)
+                    {
+                        countProgress += sourcefile.Length;
+                        // перезапись файла, который устарел в назначении
+                        worker?.ReportProgress((int)(countProgress * 100.0 / countToCopy), ("Обновляю: ",
+                            Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", sourcefile.FullName),
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", destfile.FullName)));
                         sourcefile.CopyTo(destfile.FullName, true);
                     }
                 }
                 foreach (var folder in sourceFolders.Select(x => new DirectoryInfo(x)))
                 {
-                    if (@break) break;
+                    if (worker != null && worker.CancellationPending) break;
                     var dirpath = Path.Combine(destination, Path.GetRelativePath(source, folder.FullName));
                     if (!Directory.Exists(dirpath))
                     {
                         // создание папки, которой не было в назначении
-                        method?.Invoke("Создаю папку: ",
+                        worker?.ReportProgress((int)(countProgress * 100.0 / countToCopy), ("Создаю папку: ",
                             Path.GetRelativePath(Path.GetDirectoryName(source) ?? "", folder.FullName),
-                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", dirpath));
-                        if (method != null) Application.DoEvents();
+                            Path.GetRelativePath(Path.GetDirectoryName(destination) ?? "", dirpath)));
                         Directory.CreateDirectory(dirpath);
                     }
-                    DoReplicate(folder.FullName, dirpath, method);
+                    DoReplicate(folder.FullName, dirpath, worker);
                 }
-                method?.Invoke("Готово.", "", "");
+                worker?.ReportProgress((int)(countProgress * 100.0 / countToCopy), ("Готово.", "", ""));
                 /*
                 var dectinationFolders = Directory.GetDirectories(destination);
                 foreach (var folder in dectinationFolders.Select(x => new DirectoryInfo(x)))
@@ -273,8 +378,8 @@ namespace Replication
 
         private void tsbBreak_Click(object sender, EventArgs e)
         {
-            @break = true;
-            tsbBreak.Visible = false;
+            backgroundWorker1.CancelAsync();
+            tsbBreak.Enabled = false;
         }
     }
 

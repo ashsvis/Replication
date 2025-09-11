@@ -37,17 +37,19 @@
             toolStripStatusLabel1 = new ToolStripStatusLabel();
             toolStrip1 = new ToolStrip();
             toolStripLabel1 = new ToolStripLabel();
+            tsbBreak = new ToolStripButton();
             tsbDoReplicate = new ToolStripButton();
             tsbDefineRootSourcePath = new ToolStripButton();
             tslRootSourcePath = new ToolStripLabel();
             tvDestination = new TreeView();
             statusStrip2 = new StatusStrip();
+            toolStripProgressBar2 = new ToolStripProgressBar();
             toolStripStatusLabel2 = new ToolStripStatusLabel();
             toolStrip2 = new ToolStrip();
             toolStripLabel2 = new ToolStripLabel();
             tsbDefineRootDestinationPath = new ToolStripButton();
             tslRootDestinationPath = new ToolStripLabel();
-            tsbBreak = new ToolStripButton();
+            backgroundWorker1 = new System.ComponentModel.BackgroundWorker();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -132,6 +134,18 @@
             toolStripLabel1.Size = new Size(66, 22);
             toolStripLabel1.Text = "Источник:";
             // 
+            // tsbBreak
+            // 
+            tsbBreak.Alignment = ToolStripItemAlignment.Right;
+            tsbBreak.DisplayStyle = ToolStripItemDisplayStyle.Image;
+            tsbBreak.Enabled = false;
+            tsbBreak.Image = Properties.Resources.close;
+            tsbBreak.ImageTransparentColor = Color.Magenta;
+            tsbBreak.Name = "tsbBreak";
+            tsbBreak.Size = new Size(23, 22);
+            tsbBreak.Text = "Прервать";
+            tsbBreak.Click += tsbBreak_Click;
+            // 
             // tsbDoReplicate
             // 
             tsbDoReplicate.Alignment = ToolStripItemAlignment.Right;
@@ -176,12 +190,19 @@
             // 
             // statusStrip2
             // 
-            statusStrip2.Items.AddRange(new ToolStripItem[] { toolStripStatusLabel2 });
+            statusStrip2.Items.AddRange(new ToolStripItem[] { toolStripProgressBar2, toolStripStatusLabel2 });
             statusStrip2.Location = new Point(0, 525);
             statusStrip2.Name = "statusStrip2";
             statusStrip2.Size = new Size(493, 22);
             statusStrip2.TabIndex = 1;
             statusStrip2.Text = "statusStrip2";
+            // 
+            // toolStripProgressBar2
+            // 
+            toolStripProgressBar2.Alignment = ToolStripItemAlignment.Right;
+            toolStripProgressBar2.Name = "toolStripProgressBar2";
+            toolStripProgressBar2.Size = new Size(100, 16);
+            toolStripProgressBar2.Visible = false;
             // 
             // toolStripStatusLabel2
             // 
@@ -221,17 +242,13 @@
             tslRootDestinationPath.Size = new Size(17, 22);
             tslRootDestinationPath.Text = "\\\\";
             // 
-            // tsbBreak
+            // backgroundWorker1
             // 
-            tsbBreak.Alignment = ToolStripItemAlignment.Right;
-            tsbBreak.DisplayStyle = ToolStripItemDisplayStyle.Image;
-            tsbBreak.Image = Properties.Resources.close;
-            tsbBreak.ImageTransparentColor = Color.Magenta;
-            tsbBreak.Name = "tsbBreak";
-            tsbBreak.Size = new Size(23, 22);
-            tsbBreak.Text = "Прервать";
-            tsbBreak.Visible = false;
-            tsbBreak.Click += tsbBreak_Click;
+            backgroundWorker1.WorkerReportsProgress = true;
+            backgroundWorker1.WorkerSupportsCancellation = true;
+            backgroundWorker1.DoWork += backgroundWorker1_DoWork;
+            backgroundWorker1.ProgressChanged += backgroundWorker1_ProgressChanged;
+            backgroundWorker1.RunWorkerCompleted += backgroundWorker1_RunWorkerCompleted;
             // 
             // MainForm
             // 
@@ -282,5 +299,7 @@
         private ToolStripStatusLabel toolStripStatusLabel1;
         private ToolStripStatusLabel toolStripStatusLabel2;
         private ToolStripButton tsbBreak;
+        private System.ComponentModel.BackgroundWorker backgroundWorker1;
+        private ToolStripProgressBar toolStripProgressBar2;
     }
 }
